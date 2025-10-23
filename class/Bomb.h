@@ -6,27 +6,22 @@ using namespace std;
 
 class Bomb {
 private:
-    int x, y;      // coordinates on the map
-    int timer;     // countdown ticks
-    int power;     // explosion range
-    bool exploded;
+    int x, y;     // position on map
+    int timer;    // countdown before explosion
+    int power;    // explosion range
 
 public:
     Bomb(int _x, int _y, int _timer = 3, int _power = 1)
-        : x(_x), y(_y), timer(_timer), power(_power), exploded(false) {}
+        : x(_x), y(_y), timer(_timer), power(_power) {}
 
+    void tick() { if (timer > 0) timer--; }
+
+    bool hasExploded() const { return timer == 0; }
+
+    int getTimer() const { return timer; }
     int getX() const { return x; }
     int getY() const { return y; }
-    int getTimer() const { return timer; }
-    int getPower() const { return power; }
-    bool hasExploded() const { return exploded; }
-
-    void tick() {
-        if (!exploded && timer > 0) {
-            timer--;
-            if (timer == 0) exploded = true;
-        }
-    }
+    int getPower() { return power; }
 };
 
 #endif

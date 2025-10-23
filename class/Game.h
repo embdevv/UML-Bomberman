@@ -21,16 +21,34 @@ private:
 public:
     #define INITIAL_BOMB_COUNT 10
 
-    Game() : player("Bomberman", 10, 1, INITIAL_BOMB_COUNT, 4, 4), running(true) {
+    void printUI(){
+                cout << "-----------------------------\n";
+                cout << "Player (P): " << player.getName() 
+                    << " | HP: " << player.getHp() 
+                    << " | DMG: " << player.getDamage() 
+                    << " | Bombs: " << player.getBombs() << endl;
+
+                for(auto &e : enemies) {
+                    cout << "Enemy: " << e.getName() 
+                        << " | Position: (" << e.getX() << "," << e.getY() << ")"
+                        << " | HP: " << e.getHp() 
+                        << " | DMG: " << e.getDamage() << endl;
+                }
+                cout << "-----------------------------\n";
+            }
+
+    Game() : player("Bomberman", 25, 5, INITIAL_BOMB_COUNT, 4, 4), running(true) {
         // Add some enemies
-        enemies.push_back(Enemy("Enemy1",1,1));
-        enemies.push_back(Enemy("Enemy2",6,8));
+        enemies.push_back(Enemy("Leaper",  5, 4, 1,1));
+        enemies.push_back(Enemy("Brawler", 10, 10, 6,8));
     }
 
     void run() {
         char input;
         while(running){
             system("cls");
+            printUI();
+
             map.print(bombs);
             cout << "Move: W/A/S/D | Bomb: B | Quit: Q\nBombs left: " << player.getBombs() << endl;
 
@@ -43,16 +61,18 @@ public:
                 running=false;
 
             // Tick bombs
-            for(auto &b : bombs) 
+            // Tick bombs after printing
+            for (auto &b : bombs)
                 b.tick();
 
             // Explode bombs
-            for(int i=bombs.size()-1;i>=0;i--){
-                if(bombs[i].hasExploded()){
-                    map.explodeBomb(bombs[i].getX(),bombs[i].getY());
-                    bombs.erase(bombs.begin()+i);
+            for (int i = bombs.size()-1; i >= 0; i--) {
+                if (bombs[i].hasExploded()) {
+                    map.explodeBomb(bombs[i].getX(), bombs[i].getY());
+                    bombs.erase(bombs.begin() + i);
                 }
             }
+
 
             // Move enemies
             for(auto &e : enemies) e.moveRandom(map);

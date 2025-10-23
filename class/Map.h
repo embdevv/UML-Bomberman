@@ -32,26 +32,28 @@ public:
     char getTile(int i, int j) const { return grid[i][j]; }
     void setTile(int i, int j, char c) { grid[i][j] = c; }
 
-    void print(const vector<Bomb> &bombs) {
-        // Make a copy to display
+    void print(const vector<Bomb>& bombs) {
         char display[MAP_SIZE][MAP_SIZE];
-        for(int i=0;i<MAP_SIZE;i++)
-            for(int j=0;j<MAP_SIZE;j++)
+
+        // copy map layout
+        for (int i = 0; i < MAP_SIZE; i++)
+            for (int j = 0; j < MAP_SIZE; j++)
                 display[i][j] = grid[i][j];
 
-        // Overlay bombs countdown
-        for(const auto &b : bombs) {
-            if(!b.hasExploded())
-                display[b.getX()][b.getY()] = '0' + b.getTimer(); // 3,2,1
+        // display bombs with timer
+        for (const auto &b : bombs) {
+            if (!b.hasExploded())
+                display[b.getX()][b.getY()] = '0' + b.getTimer(); // shows 3,2,1
         }
 
-        // Print map
-        for(int i=0;i<MAP_SIZE;i++){
-            for(int j=0;j<MAP_SIZE;j++)
-                cout << display[i][j] << " ";
+        // print map
+        for (int i = 0; i < MAP_SIZE; i++) {
+            for (int j = 0; j < MAP_SIZE; j++)
+                cout << display[i][j] << ' ';
             cout << endl;
         }
     }
+
 
     void explodeBomb(int x, int y) {
         grid[x][y] = ' '; // remove bomb

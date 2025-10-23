@@ -3,6 +3,8 @@
 
 #include "Map.h"
 #include "Bomb.h"
+#include "Player.h"
+
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -41,16 +43,16 @@ public:
     }
 
     void placeBomb(Map &map, vector<Bomb> &bombsVec) {
-        if (bombs <= 0) {
-            cout << name << " has no bombs left!\n";
-            return;
-        }
-
-        bombs--; // decrement available bombs
-        bombsVec.push_back(Bomb(x, y, 3, 1));
-        map.setTile(x, y, '*'); // show bomb temporarily
-        cout << name << " placed a bomb!\n";
+    if (bombs > 0) {
+        bombs--;
+        bombsVec.push_back(Bomb(x, y, 4, 1)); // timer = 3
+        cout << name << " placed a bomb!" << endl;
+    } else {
+        cout << name << " has no bombs left!" << endl;
     }
+    }
+
+    string getName() const { return name; }
 
     void displayInfo() const {
         cout << name << " | HP: " << hp << " | DMG: " << dmg << " | Bombs: " << bombs << endl;

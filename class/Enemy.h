@@ -10,8 +10,10 @@ class Enemy {
 private:
     int x, y;
     string name;
+    int damage;
+    int health;
 public:
-    Enemy(string n, int startX, int startY) : name(n), x(startX), y(startY) {}
+    Enemy(string n, int hp, int dmg, int startX, int startY) : name(n), health(hp), damage(dmg), x(startX), y(startY) {}
     int getX() const { return x; }
     int getY() const { return y; }
 
@@ -26,6 +28,10 @@ public:
             map.setTile(x,y,'E');
         }
     }
+
+    string getName() const { return name; }
+    int getDamage() const { return damage; }
+    int getHp() const { return health; }
 };
 
 #endif
