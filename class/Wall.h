@@ -6,7 +6,8 @@ protected:
     bool destructible;
 public:
     Wall(bool d) : destructible(d) {}
-    bool isDestructible() { return destructible; }
+    virtual ~Wall() {}  // Virtual for polymorphism
+    bool isDestructible() const { return destructible; }
 };
 
 class BreakableWall : public Wall {

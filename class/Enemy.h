@@ -3,35 +3,41 @@
 
 #include <iostream>
 #include <string>
+#include <cstdlib>  // For rand()
 #include "Map.h"
+#include "Player.h"
 using namespace std;
 
-class Enemy {
+class Enemy : public Player {
 private:
     int x, y;
-    string name;
-    int damage;
-    int health;
+    int moveDistance;  // 1 = normal, 2 = leaper
+
 public:
-    Enemy(string n, int hp, int dmg, int startX, int startY) : name(n), health(hp), damage(dmg), x(startX), y(startY) {}
+    Enemy(string n, int hp, int dmg, int startX, int startY, int moveDist = 1)
+        : Player(n, hp, dmg), x(startX), y(startY), moveDistance(moveDist) {}
+
     int getX() const { return x; }
     int getY() const { return y; }
 
-    void moveRandom(Map &map) {
-        int dx[4] = {-1,1,0,0};
-        int dy[4] = {0,0,-1,1};
-        int dir = rand()%4;
-        int nx = x+dx[dir], ny=y+dy[dir];
-        if(map.getTile(nx,ny) == ' '){
-            map.setTile(x,y,' ');
+    void moveRandom(Map& map) {
+        int dx[4] = {-moveDistance, moveDistance, 0, 0};
+        int dy[4] = {0, 0, -moveDistance, moveDistance};
+        int dir = rand() % 4;
+        int nx = x + dx[dir], ny = y + dy[dir];
+        if (map.isValidMove(nx, ny)) {
+            map.setTile(x, y, ' ');
             x = nx; y = ny;
-            map.setTile(x,y,'E');
+            map.setTile(x, y, 'E');
         }
     }
 
-    string getName() const { return name; }
-    int getDamage() const { return damage; }
-    int getHp() const { return health; }
+    void takeDamage(int dmg) override {
+        Player::takeDamage(dmg);
+        if (hp <= 0) {
+            cout << name << " defeated!" << endl;
+        }
+    }
 };
 
 #endif

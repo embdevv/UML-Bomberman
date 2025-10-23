@@ -15,26 +15,27 @@ protected:
 
 public:
     Player(string n, int health, int damage) : name(n), hp(health), dmg(damage) {}
+    virtual ~Player() {}  // Virtual destructor for polymorphism
 
-    string getName() { return name; }
-    int getHp() { return hp; }
-    int getDamage() { return dmg; }
+    string getName() const { return name; }
+    int getHp() const { return hp; }
+    int getDamage() const { return dmg; }
 
     void setHp(int value) { hp = value; }
     void setDamage(int value) { dmg = value; }
 
     /**
-     * Reduce HP when taking damage
+     * Reduce HP when taking damage (virtual for subclasses)
      */
-    void takeDamage(int amount) {
+    virtual void takeDamage(int amount) {
         hp -= amount;
-        if(hp<0) hp=0;
+        if (hp < 0) hp = 0;
     }
 
     /**
-     * Display player info
+     * Display player info (virtual for polymorphism)
      */
-    void displayInfo() {
+    virtual void displayInfo() const {
         cout << "------------\n";
         cout << name << "\nHP: " << hp << " DMG: " << dmg << "\n------------\n";
     }

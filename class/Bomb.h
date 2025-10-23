@@ -21,7 +21,7 @@ public:
     int getTimer() const { return timer; }
     int getX() const { return x; }
     int getY() const { return y; }
-    int getPower() { return power; }
+    int getPower() const { return power; }
 };
 
 #endif

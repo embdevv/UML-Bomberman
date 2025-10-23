@@ -8,7 +8,11 @@
 #include <vector>
 #include <conio.h>
 #include <iostream>
+#include <ctime>  // For srand
+#include <algorithm>  // For remove_if
 using namespace std;
+
+#define INITIAL_BOMB_COUNT 10
 
 class Game {
 private:
@@ -19,63 +23,75 @@ private:
     bool running;
 
 public:
-    #define INITIAL_BOMB_COUNT 10
-
-    void printUI(){
-                cout << "-----------------------------\n";
-                cout << "Player (P): " << player.getName() 
-                    << " | HP: " << player.getHp() 
-                    << " | DMG: " << player.getDamage() 
-                    << " | Bombs: " << player.getBombs() << endl;
-
-                for(auto &e : enemies) {
-                    cout << "Enemy: " << e.getName() 
-                        << " | Position: (" << e.getX() << "," << e.getY() << ")"
-                        << " | HP: " << e.getHp() 
-                        << " | DMG: " << e.getDamage() << endl;
-                }
-                cout << "-----------------------------\n";
-            }
-
-    Game() : player("Bomberman", 25, 5, INITIAL_BOMB_COUNT, 4, 4), running(true) {
-        // Add some enemies
-        enemies.push_back(Enemy("Leaper",  5, 4, 1,1));
-        enemies.push_back(Enemy("Brawler", 10, 10, 6,8));
+    Game() : player("Bomberman", 10, 1, INITIAL_BOMB_COUNT), running(true) {
+        srand(time(0));  // Seed random
+        enemies.push_back(Enemy("Leaper", 5, 1, 1, 1, 2));
+        enemies.push_back(Enemy("Tank", 10, 3, 6, 6, 1));
+        for (auto& e : enemies) {
+            map.setTile(e.getX(), e.getY(), 'E');
+        }
     }
 
     void run() {
         char input;
-        while(running){
+        while (running) {
             system("cls");
-            printUI();
-
             map.print(bombs);
-            cout << "Move: W/A/S/D | Bomb: B | Quit: Q\nBombs left: " << player.getBombs() << endl;
+            player.displayInfo();
+            cout << "Enemies:\n";
+            for (auto& e : enemies) {
+                e.displayInfo();
+            }
+            cout << "Move: W/A/S/D | Bomb: B | Quit: Q\n";
 
             input = _getch();
-            if(input=='w'||input=='a'||input=='s'||input=='d')
-                player.move(map,input);
-            else if(input=='b'||input=='B')
-                player.placeBomb(map,bombs);
-            else if(input=='q'||input=='Q')
-                running=false;
+            if (input == 'w' || input == 'a' || input == 's' || input == 'd')
+                player.move(map, input);
+            else if (input == 'b' || input == 'B')
+                player.placeBomb(map, bombs);
+            else if (input == 'q' || input == 'Q')
+                running = false;
 
             // Tick bombs
-            // Tick bombs after printing
-            for (auto &b : bombs)
-                b.tick();
+            for (auto& b : bombs) b.tick();
 
-            // Explode bombs
-            for (int i = bombs.size()-1; i >= 0; i--) {
+            // Explode bombs and damage entities
+            for (int i = bombs.size() - 1; i >= 0; i--) {
                 if (bombs[i].hasExploded()) {
-                    map.explodeBomb(bombs[i].getX(), bombs[i].getY());
+                    auto hitPositions = map.explodeBomb(bombs[i].getX(), bombs[i].getY(), bombs[i].getPower());
+                    // Damage player if in blast
+                    for (auto& pos : hitPositions) {
+                        if (pos.first == player.getX() && pos.second == player.getY()) {
+                            player.takeDamage(1);
+                        }
+                    }
+                    // Damage enemies
+                    for (auto& e : enemies) {
+                        for (auto& pos : hitPositions) {
+                            if (pos.first == e.getX() && pos.second == e.getY()) {
+                                e.takeDamage(1);
+                            }
+                        }
+                    }
                     bombs.erase(bombs.begin() + i);
                 }
             }
 
+            // Remove dead enemies
+            enemies.erase(remove_if(enemies.begin(), enemies.end(),
+                [](const Enemy& e) { return e.getHp() <= 0; }), enemies.end());
 
             // Move enemies
-            for(auto &e : enemies) e.moveRandom(map);
+            for (auto& e : enemies) e.moveRandom(map);
+
+            // Check win/lose
+            if (player.getHp() <= 0) {
+                cout << "You lose! Game over.\n";
+                running = false;
+            } else if (enemies.empty()) {
+                cout << "You win! All enemies defeated.\n";
+                running = false;
+            }
         }
         cout << "Thanks for playing!\n";
     }
