@@ -1,25 +1,31 @@
 #ifndef BOMB_H
 #define BOMB_H
 
+#include <iostream>
+using namespace std;
+
 class Bomb {
 private:
-    int x, y;
-    int timer;
-    int power;
-    bool active;
+    int x, y;       // position
+    int timer;      // countdown before explosion
+    int power;      // explosion range
+    bool exploded;  // has it exploded
+
 public:
-    Bomb(int px, int py, int t=3, int p=1) : x(px), y(py), timer(t), power(p), active(false) {}
-    void activate() { active = true; }
-    
-    void tick() {
-    if(!active) active = true; 
-    if(timer > 0) timer--;
+    Bomb(int xPos, int yPos, int t = 3, int p = 1) {
+        x = xPos; y = yPos;
+        timer = t; power = p;
+        exploded = false;
     }
- 
-    bool hasExploded() { return active && timer==0; }
-    int getX() { return x; }
-    int getY() { return y; }
-    int getPower() { return power; }
+
+    int getX() const { return x; }
+    int getY() const { return y; }
+    bool hasExploded() const { return exploded; }
+
+    void tick() {
+        if(timer > 0) timer--;
+        if(timer == 0) exploded = true;
+    }
 };
 
 #endif

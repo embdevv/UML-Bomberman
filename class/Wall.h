@@ -20,4 +20,3 @@ public:
 };
 
 #endif
-    // WALL_H

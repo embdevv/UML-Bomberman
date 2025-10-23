@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Bomberman.h"
 #include "Bomb.h"
+#include "Enemy.h"
 #include <vector>
 #include <conio.h>
 #include <iostream>
@@ -14,9 +15,15 @@ private:
     Map map;
     Bomberman player;
     vector<Bomb> bombs;
+    vector<Enemy> enemies;
     bool running;
+
 public:
-    Game() : player("Bomberman", 10, 1, 3), running(true) {}
+    Game() : player("Bomberman"), running(true) {
+        // Add some enemies
+        enemies.push_back(Enemy("Enemy1",1,1));
+        enemies.push_back(Enemy("Enemy2",6,8));
+    }
 
     void run() {
         char input;
@@ -26,7 +33,6 @@ public:
             cout << "Move: W/A/S/D | Bomb: B | Quit: Q\nBombs left: " << player.getBombs() << endl;
 
             input = _getch();
-
             if(input=='w'||input=='a'||input=='s'||input=='d')
                 player.move(map,input);
             else if(input=='b'||input=='B')
@@ -35,17 +41,20 @@ public:
                 running=false;
 
             // Tick bombs
-            for(auto &b : bombs){
-                if(!b.hasExploded()) b.tick();
-                if(b.hasExploded()) map.explodeBomb(b.getX(),b.getY());
+            for(auto &b : bombs) b.tick();
+
+            // Explode bombs
+            for(int i=bombs.size()-1;i>=0;i--){
+                if(bombs[i].hasExploded()){
+                    map.explodeBomb(bombs[i].getX(),bombs[i].getY());
+                    bombs.erase(bombs.begin()+i);
+                }
             }
 
-            // Remove exploded bombs
-            for(int i=bombs.size()-1;i>=0;i--){
-                if(bombs[i].hasExploded()) bombs.erase(bombs.begin()+i);
-            }
+            // Move enemies
+            for(auto &e : enemies) e.moveRandom(map);
         }
-        cout << "Thanks for playing!" << endl;
+        cout << "Thanks for playing!\n";
     }
 };
 
