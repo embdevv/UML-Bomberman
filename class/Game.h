@@ -19,7 +19,9 @@ private:
     bool running;
 
 public:
-    Game() : player("Bomberman"), running(true) {
+    #define INITIAL_BOMB_COUNT 10
+
+    Game() : player("Bomberman", 10, 1, INITIAL_BOMB_COUNT, 4, 4), running(true) {
         // Add some enemies
         enemies.push_back(Enemy("Enemy1",1,1));
         enemies.push_back(Enemy("Enemy2",6,8));
@@ -41,7 +43,8 @@ public:
                 running=false;
 
             // Tick bombs
-            for(auto &b : bombs) b.tick();
+            for(auto &b : bombs) 
+                b.tick();
 
             // Explode bombs
             for(int i=bombs.size()-1;i>=0;i--){

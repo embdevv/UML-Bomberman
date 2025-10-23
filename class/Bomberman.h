@@ -1,61 +1,60 @@
 #ifndef BOMBERMAN_H
 #define BOMBERMAN_H
 
-#include <iostream>
+#include "Map.h"
+#include "Bomb.h"
 #include <vector>
-#include <string>
+#include <iostream>
 using namespace std;
-
-class Map;
-class Bomb;
-
-#define INITIAL_BOMB_COUNT 4
 
 class Bomberman {
 private:
-    int x, y;
-    int bombs;
     string name;
+    int hp, dmg;
+    int bombs;
+    int x, y; // current position
 
 public:
-    Bomberman(string n="Bomberman") : name(n), bombs(INITIAL_BOMB_COUNT), x(4), y(3) {}
+    Bomberman(string n, int _hp, int _dmg, int _bombs, int startX = 1, int startY = 1)
+        : name(n), hp(_hp), dmg(_dmg), bombs(_bombs), x(startX), y(startY) {}
 
     int getX() const { return x; }
     int getY() const { return y; }
+    int getHp() const { return hp; }
+    int getDamage() const { return dmg; }
     int getBombs() const { return bombs; }
 
-    void move(Map &map, char dir);
-    void placeBomb(Map &map, vector<Bomb> &bombsVec);
-};
-
-#include "Map.h"
-#include "Bomb.h"
-
-inline void Bomberman::move(Map &map, char dir){
-    int newX = x, newY = y;
-    switch(dir){
-        case 'w': newX--; break;
-        case 's': newX++; break;
-        case 'a': newY--; break;
-        case 'd': newY++; break;
-        default: return;
+    void move(Map &map, char dir) {
+        int newX = x, newY = y;
+        switch(dir){
+            case 'w': newX--; break;
+            case 's': newX++; break;
+            case 'a': newY--; break;
+            case 'd': newY++; break;
+            default: return;
+        }
+        if (map.getTile(newX,newY) == ' ') {
+            map.setTile(x,y,' '); // clear old
+            x=newX; y=newY;
+            map.setTile(x,y,'P'); // move player
+        }
     }
-    if(map.getTile(newX,newY) == ' '){
-        map.setTile(x,y,' ');
-        x = newX; y = newY;
-        map.setTile(x,y,'P');
-    }
-}
 
-inline void Bomberman::placeBomb(Map &map, vector<Bomb> &bombsVec){
-    if(bombs>0){
-        bombs--;
-        map.setTile(x,y,'*');
-        bombsVec.push_back(Bomb(x,y));
+    void placeBomb(Map &map, vector<Bomb> &bombsVec) {
+        if (bombs <= 0) {
+            cout << name << " has no bombs left!\n";
+            return;
+        }
+
+        bombs--; // decrement available bombs
+        bombsVec.push_back(Bomb(x, y, 3, 1));
+        map.setTile(x, y, '*'); // show bomb temporarily
         cout << name << " placed a bomb!\n";
-    } else {
-        cout << name << " has no bombs left!\n";
     }
-}
+
+    void displayInfo() const {
+        cout << name << " | HP: " << hp << " | DMG: " << dmg << " | Bombs: " << bombs << endl;
+    }
+};
 
 #endif
