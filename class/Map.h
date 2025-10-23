@@ -8,33 +8,48 @@
 #include "Player.h"
 using namespace std;
 
-#define MAP_SIZE 9
+#define MAP_ROWS 15   // Height (rows)
+#define MAP_COLS 25   // Width (columns)
 
 class Map {
 private:
     vector<vector<Wall*>> walls;  // 2D vector for walls
-    char entities[MAP_SIZE][MAP_SIZE];  // For dynamic entities (P, E, bombs)
+    vector<vector<char>> entities;  // Flexible dimensions
 
 public:
     Map() {
-        walls.resize(MAP_SIZE, vector<Wall*>(MAP_SIZE, nullptr));
+        walls.resize(MAP_ROWS, vector<Wall*>(MAP_COLS, nullptr));
+        entities.resize(MAP_ROWS, vector<char>(MAP_COLS, ' '));
+        
         // Initialize walls and entities
-        for (int i = 0; i < MAP_SIZE; i++) {
-            for (int j = 0; j < MAP_SIZE; j++) {
+        for (int i = 0; i < MAP_ROWS; i++) {
+            for (int j = 0; j < MAP_COLS; j++) {
                 entities[i][j] = ' ';
-                if (i == 0 || i == MAP_SIZE - 1 || j == 0 || j == MAP_SIZE - 1) {
-                    walls[i][j] = new UnbreakableWall();  // Borders
+                
+                // Create border walls
+                if (i == 0 || i == MAP_ROWS - 1 || j == 0 || j == MAP_COLS - 1) {
+                    walls[i][j] = new UnbreakableWall();
                     entities[i][j] = '#';
-                } else if ((i == 2 && (j == 2 || j == 4 || j == 6)) ||
-                           (i == 4 && (j == 2 || j == 6)) ||
-                           (i == 6 && (j == 2 || j == 4 || j == 6))) {  // Breakable wall positions (matching original 'B' placements)
-                    walls[i][j] = new BreakableWall();
-                    entities[i][j] = 'X';  // 'X' for breakable walls
+                }
+                // Create less frequent checkerboard pattern of unbreakable walls (every 4th instead of 2nd)
+                else if (i % 4 == 0 && j % 4 == 0) {
+                    walls[i][j] = new UnbreakableWall();
+                    entities[i][j] = '#';
+                }
+                // Add breakable walls with reduced 50% probability (was 70%)
+                else if (!(
+                    (i >= 1 && i <= 3 && j >= 1 && j <= 3) ||  // Top-left area (player start)
+                    (i >= MAP_ROWS-4 && i < MAP_ROWS-1 && j >= MAP_COLS-4 && j < MAP_COLS-1)  // Bottom-right area (enemy)
+                )) {
+                    if (rand() % 100 < 50 && entities[i][j] == ' ') {  // Reduced from 70% to 50%
+                        walls[i][j] = new BreakableWall();
+                        entities[i][j] = 'X';
+                    }
                 }
             }
         }
-        // Set initial player position (ensure it's not overwritten by walls)
-        entities[4][4] = 'P';
+        // Set initial player position in top-left corner
+        entities[1][1] = 'P';
     }
 
     ~Map() {
@@ -49,16 +64,12 @@ public:
     void setTile(int i, int j, char c) { entities[i][j] = c; }
 
     bool isValidMove(int i, int j) const {
-        return i >= 0 && i < MAP_SIZE && j >= 0 && j < MAP_SIZE && entities[i][j] == ' ';
+        return i >= 0 && i < MAP_ROWS && j >= 0 && j < MAP_COLS && entities[i][j] == ' ';
     }
 
     void print(const vector<Bomb>& bombs) {
-        char display[MAP_SIZE][MAP_SIZE];
-        // Copy entities
-        for (int i = 0; i < MAP_SIZE; i++)
-            for (int j = 0; j < MAP_SIZE; j++)
-                display[i][j] = entities[i][j];
-
+        vector<vector<char>> display = entities;  // Copy entities
+        
         // Overlay bombs
         for (const auto& b : bombs) {
             if (!b.hasExploded())
@@ -66,8 +77,31 @@ public:
         }
 
         // Print
-        for (int i = 0; i < MAP_SIZE; i++) {
-            for (int j = 0; j < MAP_SIZE; j++)
+        for (int i = 0; i < MAP_ROWS; i++) {
+            for (int j = 0; j < MAP_COLS; j++)
+                cout << display[i][j] << ' ';
+            cout << endl;
+        }
+    }
+
+    // New: Print with explosion effect (overlay 'o' on hit positions)
+    void printWithExplosion(const vector<Bomb>& bombs, const vector<pair<int, int>>& hitPositions) {
+        vector<vector<char>> display = entities;  // Copy entities
+        
+        // Overlay bombs
+        for (const auto& b : bombs) {
+            if (!b.hasExploded())
+                display[b.getX()][b.getY()] = '0' + b.getTimer();
+        }
+        
+        // Overlay explosion 'o' on hit positions
+        for (const auto& pos : hitPositions) {
+            display[pos.first][pos.second] = 'o';
+        }
+
+        // Print
+        for (int i = 0; i < MAP_ROWS; i++) {
+            for (int j = 0; j < MAP_COLS; j++)
                 cout << display[i][j] << ' ';
             cout << endl;
         }
@@ -82,7 +116,7 @@ public:
         for (int d = 0; d < 4; d++) {
             for (int r = 1; r <= power; r++) {
                 int nx = x + dx[d] * r, ny = y + dy[d] * r;
-                if (nx < 0 || nx >= MAP_SIZE || ny < 0 || ny >= MAP_SIZE) break;
+                if (nx < 0 || nx >= MAP_ROWS || ny < 0 || ny >= MAP_COLS) break;
                 if (walls[nx][ny] && walls[nx][ny]->isDestructible()) {
                     delete walls[nx][ny];
                     walls[nx][ny] = nullptr;

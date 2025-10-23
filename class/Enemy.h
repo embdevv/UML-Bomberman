@@ -48,14 +48,14 @@ public:
 // Subclass for Leaper: Moves 2 tiles, symbol 'L'
 class Leaper : public Enemy {
 public:
-    Leaper(int startX, int startY) : Enemy("Leaper", 5, 1, startX, startY, 2, 'L') {}
+    Leaper(int startX, int startY) : Enemy("Leaper", 2, 1, startX, startY, 2, 'L') {}
     // Inherits moveRandom, but symbol is 'L'
 };
 
 // Subclass for Brawler: Moves 1 tile, higher HP/damage, symbol 'B' (renamed from Tank)
 class Brawler : public Enemy {
 public:
-    Brawler(int startX, int startY) : Enemy("Brawler", 10, 3, startX, startY, 1, 'B') {}
+    Brawler(int startX, int startY) : Enemy("Brawler", 4, 3, startX, startY, 1, 'B') {}
     // Inherits moveRandom, but symbol is 'B'
 };
 
