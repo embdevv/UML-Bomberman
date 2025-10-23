@@ -16,23 +16,42 @@ using namespace std;
 
 #define INITIAL_BOMB_COUNT 15
 
+/**
+ * @file Game.h
+ * @brief Main game class for Bomberman.
+ * @details Manages game loop, player/enemy actions, bomb mechanics, and win/lose conditions. 
+ * 
+ * References:
+ * - GDPROG3 Course Materials
+ * - C++ Auto Keyword: https://www.w3schools.com/cpp/cpp_auto.asp
+ */
+
+ /** 
+ * @class Game
+ * @brief Encapsulates the Bomberman game logic and state.
+ */
+
 class Game {
 private:
-    Map map;
-    Bomberman player;
-    vector<Bomb> bombs;
-    vector<Enemy*> enemies;  // Changed to pointers for polymorphism (subclasses like Leaper/Tank)
-    bool running;
+    Map map;                    ///< Game map
+    Bomberman player;           ///< Player object
+    vector<Bomb> bombs;         ///< Active bombs
+    vector<Enemy*> enemies;     ///< Active enemies (polymorphic)
+    bool running;               ///< Game loop flag
 
-    string lastMessage;     // <-- new: text to display after board
-    int messageTimer;       // <-- new: how many frames to show it
+    string lastMessage;         ///< Message to display after board
+    int messageTimer;           ///< Frames to show message
 
 public:
+    /**
+     * @brief Game constructor initializes map, player, and enemies.
+     * @post Player and enemies are placed on the map.
+     */
     Game() : player("Bomberman", 10, 5, INITIAL_BOMB_COUNT), running(true) {
-        srand(time(0));  // Seed random
-        // Use subclasses for different enemy behaviors (update if you have Leaper/Tank classes)
-        enemies.push_back(new Leaper(1,1));  // Example: Leaper moves 2 tiles
-        enemies.push_back(new Brawler(6,6));   // Example: Tank moves 1 tile, tougher
+        srand(time(0));                                 ///> Seed random
+            // Use subclasses for different enemy behaviors (update if you have Leaper/Tank classes)
+        enemies.push_back(new Leaper(1,1));             ///> Example: Leaper moves 2 tiles
+        enemies.push_back(new Brawler(6,6));            ///> Example: Tank moves 1 tile, tougher
         for (auto& e : enemies) {
             map.setTile(e->getX(), e->getY(), 'E');
         }
@@ -61,21 +80,23 @@ public:
             cout << endl;  // Spacer for readability
             player.displayInfo();
             cout << "Enemies:" << endl;
-            for (auto& e : enemies) {
-                e->displayInfo();
-            }
-            cout << "Move: W/A/S/D | Bomb: B | Quit: Q" << endl;
 
+            for (auto& e : enemies) {e->displayInfo();} 
+            cout << "Move: W/A/S/D | Bomb: B | Quit: Q" << endl;
             input = _getch();
+
             if (input == 'w' || input == 'a' || input == 's' || input == 'd') {
                 player.move(map, input);
                 cout << "Hero moved to (" << player.getX() << ", " << player.getY() << ")." << endl;
+            
             } else if (input == 'b' || input == 'B') {
                 player.placeBomb(map, bombs);
                 // Message already in placeBomb()
+            
             } else if (input == 'q' || input == 'Q') {
                 cout << "Quitting game..." << endl;
                 running = false;
+            
             } else {
                 cout << "Invalid input! Use W/A/S/D/B/Q." << endl;
             }
@@ -88,7 +109,7 @@ public:
                 if (bombs[i].hasExploded()) {
                     auto hitPositions = map.explodeBomb(bombs[i].getX(), bombs[i].getY(), bombs[i].getPower());
                     
-                    // NEW: Show explosion effect with 'o' on hit positions
+                    // Show explosion effect with 'o' on hit positions
                     system("cls");  // Clear screen
                     map.printWithExplosion(bombs, hitPositions);  // Call the new method
                     cout << endl;  // Spacer for readability
@@ -126,15 +147,15 @@ public:
             // Move enemies
             for (auto& e : enemies) e->moveRandom(map);
 
-            // Check win/lose
-            if (player.getHp() <= 0) {
+            // Check win/lose conditions
+            if (player.getHp() <= 0) {                                                // Lose if HP <= 0
                 cout << "You lose! Game over." << endl;
                 running = false;
-            } else if (!enemies.empty() && player.getBombs() == 0 && bombs.empty()) {
-                // Only lose immediately if player has no bombs AND there are no active bombs on the map
+            } else if (!enemies.empty() && player.getBombs() == 0 && bombs.empty()) { // Lose if no bombs and there are enemies remaining
+                                                                                         // Note: Only lose immediately if player has no bombs AND there are no active bombs on the map
                 cout << "You lose! No bombs left and enemies remain." << endl;
                 running = false;
-            } else if (enemies.empty()) {
+            } else if (enemies.empty()) {                                             // If enemies are all defeated [WIN]
                 cout << "You win! All enemies defeated." << endl;
                 running = false;
             }
